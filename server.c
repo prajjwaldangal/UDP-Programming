@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 	int list_s, conn_s;
 	
 	// create socket
-	list_s = socket(AF_INET, SOCK_STREAM, 0);
+	list_s = socket(AF_INET, SOCK_DGRAM, 0);
 	// bind socket to address
 	bind(list_s, (struct sockaddr *) &servaddr, sizeof(servaddr));
 	// listen

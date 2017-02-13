@@ -17,8 +17,6 @@
 #define ECHO_PORT       (2002)
 #define MAX_LINE		(1000)
 
-int ParseCmdLine(int argc, char *argv[], char **szAddress, char **szPort);
-
 int main (int argc, char *argv[]) // should start from 1 -> argv
 {
 	// bunch of initializations
@@ -74,4 +72,3 @@ int main (int argc, char *argv[]) // should start from 1 -> argv
 	
 	return 0;
 }
-
