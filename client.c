@@ -70,7 +70,7 @@ int main (int argc, char *argv[]) // should start from 1 -> argv
 		error("ERROR in sendto");
 	n = recvfrom(conn_s, buffer, MAX_LINE, 0, &servaddr, serverlen);
 	if (n < 0)
-		error("ERROR in recvfrom");
+		error("ERROR in recvfrom, serverside");
 	printf("Receive buffer %s\n", buffer);
 	
 	return 0;

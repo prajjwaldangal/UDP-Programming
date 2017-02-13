@@ -26,8 +26,10 @@ int main(int argc, char *argv[])
 {
 
 	char buffer[MAX_LINE];
-	struct sockaddr_in servaddr;
+	struct sockaddr_in servaddr, clientaddr;
 	int list_s, conn_s;
+	struct hostent *hostp;
+	char *hostaddrp;
 	
 	// create socket
 	list_s = socket(AF_INET, SOCK_DGRAM, 0);
@@ -46,18 +48,20 @@ int main(int argc, char *argv[])
 		error("ERROR on binding");
 
 	// bind(list_s, (struct sockaddr *) &servaddr, sizeof(servaddr));
-
+	socklen_t clientlen = sizeof(clientaddr);
 	while (1)
 	{
 		// accept
 		bzero(buffer, MAX_LINE);
 
 		if ((conn_s = recvfrom(list_s, buffer, MAX_LINE, 0,
-						NULL, 0)) < 0)
+						(struct sockaddr *) &clientaddr, &clientlen)) < 0)
 		{
-			error("ERROR in recvfrom");
+			error("ERROR in recvfrom serverside");
 			break;
 		}
+    	printf("server received %lu/%d bytes: %s\n", strlen(buffer), conn_s, buffer);
+    
 
 		// Readline(conn_s, buffer, MAX_LINE);
 		char * cap_str = "CAP";
@@ -112,7 +116,7 @@ int main(int argc, char *argv[])
 			sprintf(ret_str, "%i", cap_count);  /* converting int to string */
 			strcat(ret_str, "\n");
 			strcat(ret_str, semi_buf);
-			printf("return string %s", ret_str);
+			printf("return string %s\n", ret_str);
 			printf("semi_buf: %s\n", semi_buf);
 
 		} else 
@@ -171,8 +175,8 @@ int main(int argc, char *argv[])
 				// break;					
 			}
 		}
-		list_s = sendto(conn_s, buffer, MAX_LINE, 0,
-						(struct sockaddr *) NULL, 0);
+		list_s = sendto(conn_s, ret_str, MAX_LINE, 0,
+						(struct sockaddr *) &clientaddr, clientlen);
 		// Writeline(conn_s, ret_str, MAX_LINE-1);
 		close (conn_s);
 	}
