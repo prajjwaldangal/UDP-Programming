@@ -17,37 +17,50 @@ char newLineChar = '\n';
 #define MAX_LINE        (1000)
 #define LISTENQ			(1024)
 
+void error(char *msg) {
+	perror(msg);
+	exit(1);
+}
+
 int main(int argc, char *argv[]) 
 {
 
 	char buffer[MAX_LINE];
 	struct sockaddr_in servaddr;
-	servaddr.sin_family = AF_INET;
-	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servaddr.sin_port = htons(ECHO_PORT);
 	int list_s, conn_s;
 	
 	// create socket
 	list_s = socket(AF_INET, SOCK_DGRAM, 0);
+
+	int optval = 1;
+	setsockopt(list_s, SOL_SOCKET, SO_REUSEADDR, 
+				(const void *) &optval, sizeof(int));
+
+	servaddr.sin_family = AF_INET;
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.sin_port = htons(ECHO_PORT);
+
 	// bind socket to address
-	bind(list_s, (struct sockaddr *) &servaddr, sizeof(servaddr));
-	// listen
-	if (listen(list_s, LISTENQ) < 0)
-	{
-		printf("Not listening \n");
-		return 0;
-	}
+	if (bind(list_s, (struct sockaddr *) &servaddr, 
+		sizeof(servaddr)) < 0)
+		error("ERROR on binding");
+
+	// bind(list_s, (struct sockaddr *) &servaddr, sizeof(servaddr));
+
 	while (1)
 	{
 		// accept
-		if ((conn_s = accept(list_s, NULL, NULL)) < 0)
+		bzero(buffer, MAX_LINE);
+
+		if ((conn_s = recvfrom(list_s, buffer, MAX_LINE, 0,
+						(struct sockaddr *) NULL, 0)) < 0)
 		{
-			printf("Not accepting \n");
+			error("ERROR in recvfrom");
 			break;
 		}
-		Readline(conn_s, buffer, MAX_LINE);
-		char * cap_str = "CAP";
 
+		// Readline(conn_s, buffer, MAX_LINE);
+		char * cap_str = "CAP";
 		char * file_str = "FILE";
 		char * ret_str = (char *) malloc(sizeof(char) * MAX_LINE);
 		char * semi_buf = (char *) malloc(sizeof(char) * MAX_LINE-5);
@@ -74,7 +87,6 @@ int main(int argc, char *argv[])
 			else {
 				continue;
 			}
-
 		}
 		printf("n_cap: %d, n_file: %d\n", n_cap, n_file);
 		int cap_count;
@@ -135,7 +147,10 @@ int main(int argc, char *argv[])
 				int c = fgetc(fp);
 				sprintf(conv2, "%i", c);
 				strcat(ret_str, conv2);
-				Writeline(conn_s, ret_str, MAX_LINE-1);
+
+				// Writeline(conn_s, ret_str, MAX_LINE-1);
+				list_s = sendto(conn_s, buffer, MAX_LINE, 0,
+							(struct sockaddr *) NULL, 0);
 				printf("c: %c\n", c);	
 
 				// what I understood for part two on the severside is
