@@ -16,6 +16,7 @@
 
 #define ECHO_PORT       (2002)
 #define MAX_LINE		(1000)
+#define TCP_PORT		(2005)
 
 void error(char *msg) {
     perror(msg);
@@ -33,27 +34,10 @@ int main (int argc, char *argv[]) // should start from 1 -> argv
     char     *endptr;
     char choice;
 	char * msg = (char *) malloc (sizeof(char) * MAX_LINE);
-
-	// memset is required to get the connection going
-	printf("Enter s, t, or q (lowercase): ");
-	scanf("%s", &choice);
-	switch (choice)
-	{
-		case 's':
-			msg = handleS();
-			break;
-		case 't':
-			msg = handleT();
-			break;
-		case 'q':
-			return 0;
-			break;
-		default:
-			break;
-	}
+	
 	// create socket
-	int conn_s = socket(AF_INET, SOCK_DGRAM, 0);
-	if (conn_s < 0)
+	int list_s = socket(AF_INET, SOCK_DGRAM, 0);
+	if (list_s < 0)
 	{
 		error("Error opening socket \n");
 	}
@@ -62,16 +46,37 @@ int main (int argc, char *argv[]) // should start from 1 -> argv
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	servaddr.sin_port = htons(ECHO_PORT);
 	
-	strcpy(buffer, msg);
-
 	socklen_t serverlen = sizeof(servaddr);
-	int n = sendto(conn_s, buffer, MAX_LINE, 0, &servaddr, serverlen);
-	if (n < 0) 
-		error("ERROR in sendto");
-	n = recvfrom(conn_s, buffer, MAX_LINE, 0, &servaddr, serverlen);
-	if (n < 0)
-		error("ERROR in recvfrom, serverside");
-	printf("Receive buffer %s\n", buffer);
-	
+	int n;
+	while (1) {
+		printf("Enter s, t, or q (lowercase): ");
+		scanf("%s", &choice);
+		switch (choice)
+		{
+			case 's':
+				msg = handleS();
+				break;
+			case 't':
+				msg = handleT(TCP_PORT);
+				break;
+			case 'q':
+				return 0;
+				break;
+			default:
+				break;
+		}
+		strcpy(buffer, msg);
+		// "FILE\nxxx\nkkk\n"
+		n = sendto(list_s, buffer, MAX_LINE, 0, (struct sockaddr *) &servaddr, serverlen);
+		if (n < 0) 
+			error("ERROR in sendto");
+		memset(buffer, 0, sizeof(buffer));
+		n = recvfrom(list_s, buffer, MAX_LINE, 0, (struct sockaddr *) &servaddr, &serverlen);
+		if (n < 0)
+			error("ERROR in recvfrom, serverside");
+		printf("Receive buffer %s\n", buffer);
+	}
+	list_s = socket(AF_INET, SOCK_DGRAM)
+
 	return 0;
 }

@@ -22,12 +22,13 @@ char * handleS()
 	return msg_comp;
 }
 
-char * handleT() 
+char * handleT(int port) 
 {
 	char * file_str = "FILE";
+	char * TCP_port_no = malloc(sizeof(char));
 	char * msg_comp = (char *) malloc(sizeof(char) * MAX_LINE);
 	strcat(msg_comp, file_str);
-	strcat(msg_comp, &newLineChar);
+	strcat(msg_comp, &newLineChar); 
 
 	char * path = (char *) malloc(sizeof(char) * MAX_LINE-6);
 	printf("Enter file path: \n");
@@ -35,7 +36,9 @@ char * handleT()
 	scanf("%s", path);
 
 	strcat(msg_comp, path);
-	strcat(msg_comp, &newLineChar);
+	strcat(msg_comp, &newLineChar); // "FILE\nxxx\nkkk\n"
+	sprintf(TCP_port_no, "%i", port);
+	strcat(msg_comp, TCP_port_no);
 
 	return msg_comp;
 }

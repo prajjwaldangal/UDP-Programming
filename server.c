@@ -34,9 +34,9 @@ int main(int argc, char *argv[])
 	// create socket
 	list_s = socket(AF_INET, SOCK_DGRAM, 0);
 
-	int optval = 1;
-	setsockopt(list_s, SOL_SOCKET, SO_REUSEADDR, 
-				(const void *) &optval, sizeof(int));
+	// int optval = 1;
+	// setsockopt(list_s, SOL_SOCKET, SO_REUSEADDR, 
+	// 			(const void *) &optval, sizeof(int));
 
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -52,7 +52,9 @@ int main(int argc, char *argv[])
 	while (1)
 	{
 		// accept
-		bzero(buffer, MAX_LINE);
+		// bzero(buffer, MAX_LINE);
+		memset(buffer, 0, sizeof(buffer));
+
 
 		if ((conn_s = recvfrom(list_s, buffer, MAX_LINE, 0,
 						(struct sockaddr *) &clientaddr, &clientlen)) < 0)
@@ -112,11 +114,11 @@ int main(int argc, char *argv[])
 			}
 			printf("str len %lu\n", strlen(buffer));
 			// for (int i=0; i < str)
-
-			sprintf(ret_str, "%i", cap_count);  /* converting int to string */
-			strcat(ret_str, "\n");
-			strcat(ret_str, semi_buf);
-			printf("return string %s\n", ret_str);
+			memset(buffer, 0, sizeof(buffer));
+			sprintf(buffer, "%i", cap_count);  /* converting int to string */
+			strcat(buffer, "\n");
+			strcat(buffer, semi_buf);
+			printf("return string %s\n", buffer);
 			printf("semi_buf: %s\n", semi_buf);
 
 		} else 
@@ -128,56 +130,27 @@ int main(int argc, char *argv[])
 			printf("file path: %s\n", file_path);
 			fp = fopen(file_path, "r");
 			if (fp == NULL) {
-				strcat(ret_str, "9");
-				strcat(ret_str, &newLineChar);
 				strcat(ret_str, "NOT FOUND");
-			} else {
+				strcat(ret_str, &newLineChar);
+			} else { // ###\nDDD   ->  OK\n###\n
 				if (fseek(fp, 0, SEEK_END) != 0) {
 					printf("Error in seeking to the end of file");
 				}
-
 				// ret_str is the buffer, we add all the requird formattin to it
 				bytes = ftell(fp);
 				printf("File size %ld\n", bytes);
 				sprintf(n_bytes, "%ld", bytes);
+				strcat(ret_str, "OK");
+				strcat(ret_str, "\n");
 				strcat(ret_str, n_bytes);
 				strcat(ret_str, "\n");
 				fclose(fp);
 				
-				// malloc was the only way I could get it to work
-				char * conv2 = malloc(sizeof(char));
-				fp = fopen(file_path, "r");
-				int c = fgetc(fp);
-				sprintf(conv2, "%i", c);
-				strcat(ret_str, conv2);
-
-				// Writeline(conn_s, ret_str, MAX_LINE-1);
-				list_s = sendto(conn_s, buffer, MAX_LINE, 0,
-							(struct sockaddr *) NULL, 0);
-				printf("c: %c\n", c);	
-
-				// what I understood for part two on the severside is
-				// we could have a very large text file and we would have to 
-				// write buffer over buffer until the whole file was read
-				c = fgetc(fp);
-				while (c != EOF) {
-					if (strlen(ret_str) == MAX_LINE-8){
-						Writeline(conn_s, ret_str, MAX_LINE-1);
-						memset(ret_str, 0, MAX_LINE);
-					} else {
-						c = fgetc(fp);
-						printf("C: %c", c);
-						sprintf(conv2, "%d", c);
-						strcat(ret_str, conv2);
-					}
-				}	
-				fclose(fp);	
-				// break;					
+				// connect to the server at port "kkk" via TCP, send cont. of file	
 			}
 		}
-		list_s = sendto(conn_s, ret_str, MAX_LINE, 0,
+		int n = sendto(conn_s, buffer, MAX_LINE, 0,
 						(struct sockaddr *) &clientaddr, clientlen);
-		// Writeline(conn_s, ret_str, MAX_LINE-1);
-		close (conn_s);
+		// close (conn_s);
 	}
 }
