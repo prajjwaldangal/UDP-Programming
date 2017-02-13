@@ -51,9 +51,9 @@ int main (int argc, char *argv[]) // should start from 1 -> argv
 		default:
 			break;
 	}
-	int conn_s;
 	// create socket
-	if ((conn_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+	int conn_s = socket(AF_INET, SOCK_DGRAM, 0);
+	if (conn_s < 0)
 	{
 		error("Error opening socket \n");
 	}
@@ -64,11 +64,11 @@ int main (int argc, char *argv[]) // should start from 1 -> argv
 	
 	strcpy(buffer, msg);
 
-	int serverlen = sizeof(servaddr);
-	int n = sendto(sockfd, buffer, MAX_LINE, 0, &servaddr, &serverlen);
+	socklen_t serverlen = sizeof(servaddr);
+	int n = sendto(conn_s, buffer, MAX_LINE, 0, &servaddr, serverlen);
 	if (n < 0) 
 		error("ERROR in sendto");
-	n = recvfrom(conn_s, buffer, MAX_LINE, 0, &servaddr, &serverlen);
+	n = recvfrom(conn_s, buffer, MAX_LINE, 0, &servaddr, serverlen);
 	if (n < 0)
 		error("ERROR in recvfrom");
 	printf("Receive buffer %s\n", buffer);

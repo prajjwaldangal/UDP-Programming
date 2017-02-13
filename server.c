@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 		bzero(buffer, MAX_LINE);
 
 		if ((conn_s = recvfrom(list_s, buffer, MAX_LINE, 0,
-						(struct sockaddr *) NULL, 0)) < 0)
+						NULL, 0)) < 0)
 		{
 			error("ERROR in recvfrom");
 			break;
@@ -65,7 +65,6 @@ int main(int argc, char *argv[])
 		char * ret_str = (char *) malloc(sizeof(char) * MAX_LINE);
 		char * semi_buf = (char *) malloc(sizeof(char) * MAX_LINE-5);
 		
-
 		printf("Received buffer: %s\n", buffer);
 
 		// related to handling case of t
