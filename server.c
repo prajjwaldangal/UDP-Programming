@@ -172,7 +172,9 @@ int main(int argc, char *argv[])
 				// break;					
 			}
 		}
-		Writeline(conn_s, ret_str, MAX_LINE-1);
+		list_s = sendto(conn_s, buffer, MAX_LINE, 0,
+						(struct sockaddr *) NULL, 0);
+		// Writeline(conn_s, ret_str, MAX_LINE-1);
 		close (conn_s);
 	}
 }

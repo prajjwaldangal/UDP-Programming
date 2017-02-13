@@ -17,6 +17,11 @@
 #define ECHO_PORT       (2002)
 #define MAX_LINE		(1000)
 
+void error(char *msg) {
+    perror(msg);
+    exit(0);
+}
+
 int main (int argc, char *argv[]) // should start from 1 -> argv
 {
 	// bunch of initializations
@@ -30,10 +35,6 @@ int main (int argc, char *argv[]) // should start from 1 -> argv
 	char * msg = (char *) malloc (sizeof(char) * MAX_LINE);
 
 	// memset is required to get the connection going
-    memset(&servaddr, 0, sizeof(servaddr));
-	servaddr.sin_family = AF_INET;			     
-	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servaddr.sin_port = htons(ECHO_PORT);
 	printf("Enter s, t, or q (lowercase): ");
 	scanf("%s", &choice);
 	switch (choice)
@@ -52,22 +53,24 @@ int main (int argc, char *argv[]) // should start from 1 -> argv
 	}
 	int conn_s;
 	// create socket
-	if ((conn_s = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	if ((conn_s = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 	{
-		printf("Error creating socket \n");
+		error("Error opening socket \n");
 	}
-	// connect
-	if (connect(conn_s, (struct sockaddr *) &servaddr, sizeof(servaddr)) < 0)
-	{
-		printf("Error connecting \n");
-	}
+	memset(&servaddr, 0, sizeof(servaddr));
+	servaddr.sin_family = AF_INET;			     
+	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	servaddr.sin_port = htons(ECHO_PORT);
+	
 	strcpy(buffer, msg);
-	// referenced from helper.c
-	Writeline(conn_s, buffer, MAX_LINE);
 
-	// I couldn't get to the part of reading stream
-	Readline(conn_s, buffer, MAX_LINE);
-
+	int serverlen = sizeof(servaddr);
+	int n = sendto(sockfd, buffer, MAX_LINE, 0, &servaddr, &serverlen);
+	if (n < 0) 
+		error("ERROR in sendto");
+	n = recvfrom(conn_s, buffer, MAX_LINE, 0, &servaddr, &serverlen);
+	if (n < 0)
+		error("ERROR in recvfrom");
 	printf("Receive buffer %s\n", buffer);
 	
 	return 0;
